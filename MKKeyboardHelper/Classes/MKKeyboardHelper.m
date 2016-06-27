@@ -12,6 +12,8 @@
 
 @property (nonatomic, strong, nullable) UITapGestureRecognizer *tapRecognizer;
 
+@property (nonatomic, assign) BOOL isObserving;
+
 @end
 
 //============================================================
@@ -26,6 +28,7 @@
     self = [super init];
     if (self) {
         _view = view;
+        _isObserving = NO;
     }
     return self;
 }
@@ -39,22 +42,36 @@
 
 - (void)startObserving
 {
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:)
-            name:UIKeyboardWillShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:)
-            name:UIKeyboardWillHideNotification object:nil];
-    
-    self.tapRecognizer = [[UITapGestureRecognizer alloc]
-            initWithTarget:self action:@selector(didSingleTap:)];
-    self.tapRecognizer.cancelsTouchesInView = NO;
-    [self.view addGestureRecognizer:self.tapRecognizer];
+    @synchronized (self) {
+        if (self.isObserving) {
+            return;
+        }
+        self.isObserving = YES;
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:)
+                name:UIKeyboardWillShowNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:)
+                name:UIKeyboardWillHideNotification object:nil];
+
+        self.tapRecognizer = [[UITapGestureRecognizer alloc]
+                initWithTarget:self action:@selector(didSingleTap:)];
+        self.tapRecognizer.cancelsTouchesInView = NO;
+        [self.view addGestureRecognizer:self.tapRecognizer];
+    }
 }
 
 - (void)stopObserving
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [self.view removeGestureRecognizer:self.tapRecognizer];
-    self.tapRecognizer = nil;
+    @synchronized (self) {
+        if (!self.isObserving) {
+            return;
+        }
+        self.isObserving = NO;
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+        if (self.tapRecognizer) {
+            [self.view removeGestureRecognizer:self.tapRecognizer];
+            self.tapRecognizer = nil;
+        }
+    }
 }
 
 #pragma mark - Private Implementation
