@@ -1,0 +1,16 @@
+PODS:
+  - MKKeyboardHelper (0.1.0)
+
+DEPENDENCIES:
+  - MKKeyboardHelper (from `../`)
+
+EXTERNAL SOURCES:
+  MKKeyboardHelper:
+    :path: ../
+
+SPEC CHECKSUMS:
+  MKKeyboardHelper: c966c86595db5f54df6212e59f9d83779d0fc300
+
+PODFILE CHECKSUM: 91699f996a8d869bb776f5e5754ac110d9ea7289
+
+COCOAPODS: 1.0.0
