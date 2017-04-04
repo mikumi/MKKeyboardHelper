@@ -16,6 +16,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign, nullable) UIView *view;
 
+/*
+ * Defaults to 60.0f
+ */ 
+@property (nonatomic, assign) CGFloat additionalOffset;
+
 - (instancetype)initWithView:(UIView *)view;
 
 - (void)startObserving;

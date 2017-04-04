@@ -19,7 +19,9 @@
 //============================================================
 //== Implementation
 //============================================================
-@implementation MKKeyboardHelper
+@implementation MKKeyboardHelper {
+    CGFloat _additionalOffset;
+}
 
 #pragma mark - Life Cycle
 
@@ -29,6 +31,7 @@
     if (self) {
         _view = view;
         _isObserving = NO;
+        _additionalOffset = 60.0f;
     }
     return self;
 }
@@ -36,6 +39,18 @@
 - (void)dealloc
 {
     [self stopObserving];
+}
+
+#pragma mark - Public Properties
+
+- (void)setAdditionalOffset:(CGFloat)additionalOffset
+{
+    _additionalOffset = additionalOffset;
+}
+
+- (CGFloat)additionalOffset
+{
+    return _additionalOffset;
 }
 
 #pragma mark - Public Implementation
@@ -94,7 +109,7 @@
     if (firstResponder) {
         CGFloat const endY = [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue].origin.y;
         CGRect const frameInView = [firstResponder convertRect:firstResponder.bounds toView:self.view];
-        CGFloat const offsetY = endY - CGRectGetMaxY(frameInView) - 60.f;
+        CGFloat const offsetY = endY - CGRectGetMaxY(frameInView) - self.additionalOffset;
         if (offsetY < 0) {
             CGFloat const animationDuration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue];
             UIViewAnimationCurve const animationCurve = (UIViewAnimationCurve)[notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
