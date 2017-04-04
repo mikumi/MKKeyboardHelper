@@ -132,7 +132,7 @@
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
-    // TODO: this is just a temporary solution for the LINE demo. This needs to be improved, at least remove recursion
+    // This needs to be improved, at least remove recursion
     UIView *const firstResponder = [self findFirstResponderInView:self.view];
     if (firstResponder) {
         CGRect const keyboardFrame = [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
