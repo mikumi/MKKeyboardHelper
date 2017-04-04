@@ -8,6 +8,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef void (^MKKeyboardHelperOnKeyboardShow)(CGRect keyboardFrame, UIView *firstResponder, CGFloat animationDuration,
+        UIViewAnimationCurve animationCurve);
+typedef void (^MKKeyboardHelperOnKeyboardHide)(CGFloat animationDuration, UIViewAnimationCurve animationCurve);
+
 /**
  * - Move the screen up if keyboard covers a UITextField
  * - Hide keyboard if screen is tapped outside a UITextField
@@ -20,6 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Defaults to 60.0f
  */ 
 @property (nonatomic, assign) CGFloat additionalOffset;
+
+@property (nonatomic, copy, nullable) MKKeyboardHelperOnKeyboardShow onKeyboardShow;
+@property (nonatomic, copy, nullable) MKKeyboardHelperOnKeyboardHide onKeyboardHide;
 
 - (instancetype)initWithView:(UIView *)view;
 

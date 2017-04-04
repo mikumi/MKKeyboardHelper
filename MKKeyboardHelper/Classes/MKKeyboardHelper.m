@@ -21,6 +21,8 @@
 //============================================================
 @implementation MKKeyboardHelper {
     CGFloat _additionalOffset;
+    MKKeyboardHelperOnKeyboardShow _onKeyboardShow;
+    MKKeyboardHelperOnKeyboardHide _onKeyboardHide;
 }
 
 #pragma mark - Life Cycle
@@ -32,6 +34,8 @@
         _view = view;
         _isObserving = NO;
         _additionalOffset = 60.0f;
+        _onKeyboardShow = [self defaultOnShowBlock];
+        _onKeyboardHide = [self defaultOnHideBlock];
     }
     return self;
 }
@@ -51,6 +55,34 @@
 - (CGFloat)additionalOffset
 {
     return _additionalOffset;
+}
+
+- (MKKeyboardHelperOnKeyboardShow)onKeyboardShow
+{
+    return _onKeyboardShow;
+}
+
+- (void)setOnKeyboardShow:(MKKeyboardHelperOnKeyboardShow)onKeyboardShow
+{
+    if (onKeyboardShow) {
+        _onKeyboardShow = [onKeyboardShow copy];
+    } else {
+        _onKeyboardShow = [self defaultOnShowBlock];
+    }
+}
+
+- (MKKeyboardHelperOnKeyboardHide)onKeyboardHide
+{
+    return _onKeyboardHide;
+}
+
+- (void)setOnKeyboardHide:(MKKeyboardHelperOnKeyboardHide)onKeyboardHide
+{
+    if (onKeyboardHide) {
+        _onKeyboardHide = [onKeyboardHide copy];
+    } else {
+        _onKeyboardHide = [self defaultOnHideBlock];
+    }
 }
 
 #pragma mark - Public Implementation
@@ -95,11 +127,7 @@
 {
     CGFloat const animationDuration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue];
     UIViewAnimationCurve const animationCurve = (UIViewAnimationCurve)[notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
-    [UIView animateWithDuration:animationDuration delay:0.0 options:(UIViewAnimationOptions)(animationCurve << 16) animations:^{
-        CGRect frame = self.view.frame;
-        frame.origin.y = 0.0f;
-        self.view.frame = frame;
-    } completion:nil];
+    self.onKeyboardHide(animationDuration, animationCurve);
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification
@@ -107,18 +135,10 @@
     // TODO: this is just a temporary solution for the LINE demo. This needs to be improved, at least remove recursion
     UIView *const firstResponder = [self findFirstResponderInView:self.view];
     if (firstResponder) {
-        CGFloat const endY = [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue].origin.y;
-        CGRect const frameInView = [firstResponder convertRect:firstResponder.bounds toView:self.view];
-        CGFloat const offsetY = endY - CGRectGetMaxY(frameInView) - self.additionalOffset;
-        if (offsetY < 0) {
-            CGFloat const animationDuration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue];
-            UIViewAnimationCurve const animationCurve = (UIViewAnimationCurve)[notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
-            [UIView animateWithDuration:animationDuration delay:0.0 options:(UIViewAnimationOptions)(animationCurve << 16) animations:^{
-                CGRect frame = self.view.frame;
-                frame.origin.y = offsetY;
-                self.view.frame = frame;
-            } completion:nil];
-        }
+        CGRect const keyboardFrame = [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+        CGFloat const animationDuration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue];
+        UIViewAnimationCurve const animationCurve = (UIViewAnimationCurve)[notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
+        self.onKeyboardShow(keyboardFrame, firstResponder, animationDuration, animationCurve);
     }
 }
 
@@ -144,6 +164,33 @@
     if (![firstResponder pointInside:touchPoint withEvent:nil]) {
         [self.view endEditing:YES];
     }
+}
+
+- (MKKeyboardHelperOnKeyboardShow)defaultOnShowBlock
+{
+    return ^(CGRect keyboardFrame, UIView *firstResponder, CGFloat animationDuration, UIViewAnimationCurve animationCurve) {
+        CGFloat const endY = keyboardFrame.origin.y;
+        CGRect const frameInView = [firstResponder convertRect:firstResponder.bounds toView:self.view];
+        CGFloat const offsetY = endY - CGRectGetMaxY(frameInView) - self.additionalOffset;
+        if (offsetY < 0) {
+            [UIView animateWithDuration:animationDuration delay:0.0 options:(UIViewAnimationOptions)(animationCurve << 16) animations:^{
+                CGRect frame = self.view.frame;
+                frame.origin.y = offsetY;
+                self.view.frame = frame;
+            } completion:nil];
+        }
+    };
+}
+
+- (MKKeyboardHelperOnKeyboardHide)defaultOnHideBlock
+{
+    return ^(CGFloat animationDuration, UIViewAnimationCurve animationCurve) {
+        [UIView animateWithDuration:animationDuration delay:0.0 options:(UIViewAnimationOptions)(animationCurve << 16) animations:^{
+            CGRect frame = self.view.frame;
+            frame.origin.y = 0.0f;
+            self.view.frame = frame;
+        } completion:nil];
+    };
 }
 
 @end
