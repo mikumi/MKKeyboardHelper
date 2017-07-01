@@ -32,6 +32,7 @@
     self = [super init];
     if (self) {
         _view = view;
+        _ignoredViews = @[];
         _isObserving = NO;
         _additionalOffset = 60.0f;
         _onKeyboardShow = [self defaultOnShowBlock];
@@ -160,8 +161,19 @@
 - (void)didSingleTap:(UITapGestureRecognizer *)sender
 {
     UIView *const firstResponder = [self findFirstResponderInView:self.view];
-    CGPoint touchPoint = [sender locationInView:firstResponder];
-    if (![firstResponder pointInside:touchPoint withEvent:nil]) {
+    NSArray *const ignoredViews = firstResponder != nil
+            ? [self.ignoredViews arrayByAddingObject:firstResponder]
+            : self.ignoredViews;
+
+    BOOL shouldHandleTap = YES;
+    for (UIView *const ignoredView in ignoredViews) {
+        CGPoint const touchPoint = [sender locationInView:ignoredView];
+        if ([ignoredView pointInside:touchPoint withEvent:nil]) {
+            shouldHandleTap = NO;
+            break;
+        }
+    }
+    if (shouldHandleTap) {
         [self.view endEditing:YES];
     }
 }

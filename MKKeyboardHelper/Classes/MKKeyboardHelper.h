@@ -24,6 +24,7 @@ typedef void (^MKKeyboardHelperOnKeyboardHide)(CGFloat animationDuration, UIView
  * Defaults to 60.0f
  */ 
 @property (nonatomic, assign) CGFloat additionalOffset;
+@property (nonatomic, strong, nonnull) NSArray<UIView *> *ignoredViews;
 
 @property (nonatomic, copy, nullable) MKKeyboardHelperOnKeyboardShow onKeyboardShow;
 @property (nonatomic, copy, nullable) MKKeyboardHelperOnKeyboardHide onKeyboardHide;
