@@ -18,7 +18,7 @@ typedef void (^MKKeyboardHelperOnKeyboardHide)(CGFloat animationDuration, UIView
  */
 @interface MKKeyboardHelper : NSObject
 
-@property (nonatomic, assign, nullable) UIView *view;
+@property (nonatomic, weak, nullable) UIView *view;
 
 /*
  * Defaults to 60.0f
